@@ -1,5 +1,5 @@
 from ipywidgets import Dropdown, Output
-from diffusers import EulerAncestralDiscreteScheduler, DPMSolverMultistepScheduler, UniPCMultistepScheduler
+from diffusers import EulerAncestralDiscreteScheduler, DPMSolverMultistepScheduler, UniPCMultistepScheduler, DPMSolverSinglestepScheduler
 from ..utils.empty_output import EmptyOutput
 
 class SamplerChoice:
@@ -20,14 +20,25 @@ class SamplerChoice:
                 self.choose_sampler(self.colab.pipe, change.new)
 
         self.dropdown.observe(dropdown_eventhandler, names='value')
-
-    def choose_sampler(self, pipe, sampler_name: str):
+        def choose_sampler(self, pipe, sampler_name: str):
         config = pipe.scheduler.config
         match sampler_name:
             case "Euler A": sampler = EulerAncestralDiscreteScheduler.from_config(config)
-            case "DPM++": sampler = DPMSolverMultistepScheduler.from_config(config)
-            case "DPM++ Karras":
+            case "DPM++ 2M": sampler = DPMSolverMultistepScheduler.from_config(config)
+            case "DPM++ 2M Karras":
                 sampler = DPMSolverMultistepScheduler.from_config(config)
+                sampler.use_karras_sigmas = True
+            case "DPM++ 2M SDE":
+                sampler = DPMSolverMultistepScheduler.from_config(config)
+                sampler.algorithm_type = "sde-dpmsolver++"
+            case "DPM++ 2M SDE Karras":
+                sampler = DPMSolverMultistepScheduler.from_config(config)
+                sampler.use_karras_sigmas = True
+                sampler.algorithm_type = "sde-dpmsolver++"
+            case "DPM++ SDE":
+                sampler = DPMSolverSinglestepScheduler.from_config(config)
+            case "DPM++ SDE Karras":
+                sampler = DPMSolverSinglestepScheduler.from_config(config)
                 sampler.use_karras_sigmas = True
             case "UniPC":
                 sampler = UniPCMultistepScheduler.from_config(config)
