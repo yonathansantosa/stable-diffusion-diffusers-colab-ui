@@ -1,5 +1,5 @@
 from ipywidgets import Dropdown, Output
-from diffusers import EulerAncestralDiscreteScheduler, DPMSolverMultistepScheduler, UniPCMultistepScheduler, DPMSolverSinglestepScheduler
+from diffusers import EulerAncestralDiscreteScheduler, DPMSolverMultistepScheduler, UniPCMultistepScheduler, DPMSolverSinglestepScheduler, EulerDiscreteScheduler, LMSDiscreteScheduler
 from ..utils.empty_output import EmptyOutput
 
 class SamplerChoice:
@@ -10,7 +10,7 @@ class SamplerChoice:
         self.out = out
 
         self.dropdown = Dropdown(
-            options=["Euler A", "DPM++", "DPM++ Karras", "UniPC"],
+            options=["Euler", "Euler A", "DPM++ 2M", "DPM++ 2M Karras", "DPM++ 2M SDE Karras", "DPM++ SDE", "DPM++ SDE Karras", "LMS", "LMS Karras", "UniPC"],
             description='Sampler:',
         )
         
@@ -24,6 +24,7 @@ class SamplerChoice:
         def choose_sampler(self, pipe, sampler_name: str):
             config = pipe.scheduler.config
             match sampler_name:
+                case "Euler": sampler = EulerDiscreteScheduler.from_config(config)
                 case "Euler A": sampler = EulerAncestralDiscreteScheduler.from_config(config)
                 case "DPM++ 2M": sampler = DPMSolverMultistepScheduler.from_config(config)
                 case "DPM++ 2M Karras":
@@ -41,6 +42,11 @@ class SamplerChoice:
                 case "DPM++ SDE Karras":
                     sampler = DPMSolverSinglestepScheduler.from_config(config)
                     sampler.use_karras_sigmas = True
+                case "LMS Karras":
+                    sampler = LMSDiscreteScheduler.from_config(config)
+                    sampler.use_karras_sigmas = True
+                case "LMS":
+                    sampler = LMSDiscreteScheduler.from_config(config)
                 case "UniPC":
                     sampler = UniPCMultistepScheduler.from_config(config)
                 case _: raise NameError("Unknown sampler")
