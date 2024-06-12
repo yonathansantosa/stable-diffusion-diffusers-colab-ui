@@ -11,7 +11,7 @@ class SamplerChoice:
 
         self.dropdown = Dropdown(
             options=["Euler", "Euler A", "DPM++ 2M", "DPM++ 2M Karras", "DPM++ 2M SDE Karras", "DPM++ SDE", "DPM++ SDE Karras", "LMS", "LMS Karras", "UniPC"],
-            description='Sampler:',
+            description='Samplers:',
         )
         
         def dropdown_eventhandler(change):
