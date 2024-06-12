@@ -1,6 +1,6 @@
 import os
 import torch
-from diffusers import EulerAncestralDiscreteScheduler, DPMSolverMultistepScheduler, UniPCMultistepScheduler, DPMSolverSinglestepScheduler
+from diffusers import EulerAncestralDiscreteScheduler, DPMSolverMultistepScheduler, UniPCMultistepScheduler, DPMSolverSinglestepScheduler, EulerDiscreteScheduler, LMSDiscreteScheduler
 from diffusers import AutoencoderKL
 from .ArtistIndex import ArtistIndex
 from .HugginfaceModelIndex import HugginfaceModelIndex
@@ -46,6 +46,7 @@ class ColabWrapper:
     def choose_sampler(self, pipe, sampler_name: str):
         config = pipe.scheduler.config
         match sampler_name:
+            case "Euler": sampler = EulerDiscreteScheduler.from_config(config)
             case "Euler A": sampler = EulerAncestralDiscreteScheduler.from_config(config)
             case "DPM++ 2M": sampler = DPMSolverMultistepScheduler.from_config(config)
             case "DPM++ 2M Karras":
@@ -63,11 +64,17 @@ class ColabWrapper:
             case "DPM++ SDE Karras":
                 sampler = DPMSolverSinglestepScheduler.from_config(config)
                 sampler.use_karras_sigmas = True
+            case "LMS Karras":
+                sampler = LMSDiscreteScheduler.from_config(config)
+                sampler.use_karras_sigmas = True
+            case "LMS":
+                sampler = LMSDiscreteScheduler.from_config(config)
             case "UniPC":
                 sampler = UniPCMultistepScheduler.from_config(config)
             case _: raise NameError("Unknown sampler")
         pipe.scheduler = sampler
         print(f"Sampler '{sampler_name}' chosen")
+        
     def load_vae(self, id_or_path: str, subfolder: str):
         vae = AutoencoderKL.from_pretrained(id_or_path, subfolder=subfolder, torch_dtype=torch.float16).to("cuda")
         self.pipe.vae = vae
